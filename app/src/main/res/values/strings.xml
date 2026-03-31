@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MeshtasticMC</string>
+
+    <!-- Main activity -->
+    <string name="action_start_forwarding">Start Forwarding</string>
+    <string name="action_stop_forwarding">Stop Forwarding</string>
+    <string name="action_stop">Stop</string>
+    <string name="label_multicast_address">Multicast: %1$s:%2$d</string>
+    <string name="label_multicast_group_hint">Multicast group (e.g. 224.0.0.251)</string>
+    <string name="label_multicast_port_hint">UDP port (e.g. 5005)</string>
+    <string name="button_save_settings">Save Settings</string>
+    <string name="settings_saved">Settings saved</string>
+    <string name="status_running">● Forwarding active</string>
+
+    <!-- Errors -->
+    <string name="error_meshtastic_not_installed">Meshtastic app is not installed</string>
+    <string name="error_invalid_address">Enter a valid multicast address</string>
+    <string name="error_invalid_port">Enter a port between 1 and 65535</string>
+
+    <!-- Notification -->
+    <string name="notification_channel_name">Forwarding Service</string>
+    <string name="notification_channel_description">Keeps the Meshtastic → UDP forwarding service running</string>
+    <string name="notification_title">MeshtasticMC</string>
+    <string name="notification_text">Forwarding Meshtastic packets to UDP multicast…</string>
+</resources>
