@@ -60,8 +60,10 @@ class MeshtasticForwardService : Service() {
         serviceScope.launch {
             try {
                 udpSender.open()
+                LogBuffer.append("UDP socket open – destination: ${udpSender.destination}")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to open UDP socket", e)
+                LogBuffer.append("ERROR opening UDP socket: ${e.message}")
             }
         }
 
@@ -69,12 +71,15 @@ class MeshtasticForwardService : Service() {
             serviceScope.launch {
                 try {
                     udpSender.send(packetBytes)
+                    LogBuffer.append("Forwarded ${packetBytes.size} bytes → ${udpSender.destination}")
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to send UDP multicast packet", e)
+                    LogBuffer.append("ERROR sending packet: ${e.message}")
                 }
             }
         }
 
+        LogBuffer.append("Service started – forwarding to UDP multicast")
         registerMeshtasticReceiver()
         Log.i(TAG, "Service started – forwarding Meshtastic packets to UDP multicast")
     }
@@ -93,6 +98,7 @@ class MeshtasticForwardService : Service() {
         serviceJob.cancel()
         udpSender.close()
         releaseMulticastLock()
+        LogBuffer.append("Service stopped")
         Log.i(TAG, "Service stopped")
         super.onDestroy()
     }

@@ -22,6 +22,9 @@ class UdpMulticastSender(
     private var socket: MulticastSocket? = null
     private var group: InetAddress? = null
 
+    /** Human-readable destination string for display in logs. */
+    val destination: String get() = "$groupAddress:$port"
+
     /**
      * Opens the underlying [MulticastSocket].
      * Must be called from a background thread (performs I/O).

@@ -13,6 +13,10 @@
     <string name="settings_saved">Settings saved</string>
     <string name="status_running">● Forwarding active</string>
 
+    <!-- Log panel -->
+    <string name="label_log">Log</string>
+    <string name="label_log_empty">No log entries yet.</string>
+
     <!-- Errors -->
     <string name="error_meshtastic_not_installed">Meshtastic app is not installed</string>
     <string name="error_invalid_address">Enter a valid multicast address</string>

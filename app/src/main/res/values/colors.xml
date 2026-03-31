@@ -8,4 +8,5 @@
     <color name="colorBackground">#FAFAFA</color>
     <color name="colorSurface">#FFFFFF</color>
     <color name="colorStatusRunning">#4CAF50</color>
+    <color name="colorLogBackground">#F0F0F0</color>
 </resources>

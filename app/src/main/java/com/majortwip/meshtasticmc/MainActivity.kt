@@ -10,7 +10,10 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.majortwip.meshtasticmc.databinding.ActivityMainBinding
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Entry-point activity.
@@ -31,12 +34,30 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupUi()
+        observeLog()
         requestNotificationPermissionIfNeeded()
     }
 
     override fun onResume() {
         super.onResume()
         updateServiceStatus()
+    }
+
+    // ── Log observer ──────────────────────────────────────────────────────────
+
+    private fun observeLog() {
+        lifecycleScope.launch {
+            LogBuffer.entries.collectLatest { lines ->
+                val text = if (lines.isEmpty()) {
+                    getString(R.string.label_log_empty)
+                } else {
+                    lines.joinToString("\n")
+                }
+                binding.textLog.text = text
+                // Auto-scroll to the bottom so the latest entry is always visible.
+                binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
+            }
+        }
     }
 
     // ── UI setup ──────────────────────────────────────────────────────────────
