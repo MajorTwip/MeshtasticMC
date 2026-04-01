@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.meshtastic.core.api.MeshtasticIntent
 
 /**
  * Foreground [Service] that bridges Meshtastic radio packets to UDP multicast.
@@ -108,7 +109,7 @@ class MeshtasticForwardService : Service() {
     // ── BroadcastReceiver registration ────────────────────────────────────────
 
     private fun registerMeshtasticReceiver() {
-        val filter = IntentFilter(Constants.ACTION_RECEIVED_FROMRADIO)
+        val filter = IntentFilter(MeshtasticIntent.ACTION_RECEIVED_POSITION_APP)
 
         // Android 14 (API 34) requires an explicit RECEIVER_EXPORTED / RECEIVER_NOT_EXPORTED
         // flag for dynamically registered receivers.  We need EXPORTED because the broadcasts
@@ -119,6 +120,7 @@ class MeshtasticForwardService : Service() {
             @Suppress("UnspecifiedRegisterReceiverFlag")
             registerReceiver(meshReceiver, filter)
         }
+        Log.i(TAG, "Subscribed to ${MeshtasticIntent.ACTION_RECEIVED_POSITION_APP}")
     }
 
     // ── Wi-Fi multicast lock ──────────────────────────────────────────────────

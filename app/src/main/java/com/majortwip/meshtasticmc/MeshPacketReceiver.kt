@@ -3,38 +3,42 @@ package com.majortwip.meshtasticmc
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Parcel
 import android.util.Log
+import org.meshtastic.core.api.MeshtasticIntent
 
 /**
- * [BroadcastReceiver] that listens for [Constants.ACTION_RECEIVED_FROMRADIO] broadcasts from the
- * Meshtastic app and invokes [onPacketReceived] with the raw serialised `FromRadio` protobuf bytes.
- *
- * The Meshtastic app also sends per-port broadcasts (`com.geeksville.mesh.RECEIVED.<portNum>`)
- * containing a `DataPacket` Parcelable.  Those cannot be trivially serialised to bytes without
- * depending on the Meshtastic SDK, so only the `RECEIVED_FROMRADIO` broadcast is handled here.
- * That broadcast fires for *every* radio packet, so it covers all port numbers.
- *
- * The receiver is registered dynamically inside [MeshtasticForwardService] so it only lives
- * while the service is running.
- *
- * @param onPacketReceived Called on the main thread with the raw [ByteArray] payload whenever a
- *   packet arrives.  Implementations should dispatch heavy work (e.g. UDP send) off the main thread.
+ * [BroadcastReceiver] that listens for [MeshtasticIntent.ACTION_RECEIVED_POSITION_APP] broadcasts
+ * and logs the raw payload bytes for diagnostic purposes.
  */
 class MeshPacketReceiver(
     private val onPacketReceived: (bytes: ByteArray) -> Unit,
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Constants.ACTION_RECEIVED_FROMRADIO) return
+        Log.d(TAG, "onReceive: action=${intent.action}")
+        if (intent.action != MeshtasticIntent.ACTION_RECEIVED_POSITION_APP) return
 
-        val bytes = intent.getByteArrayExtra(Constants.EXTRA_FROMRADIO_BYTES)
-        if (bytes == null) {
-            Log.w(TAG, "RECEIVED_FROMRADIO intent missing '${Constants.EXTRA_FROMRADIO_BYTES}' extra – ignoring")
-            return
+        // Dump raw intent parcel BEFORE any extras access (avoids deserialization NPE).
+        val parcel = Parcel.obtain()
+        try {
+            intent.writeToParcel(parcel, 0)
+            val raw = parcel.marshall()
+            Log.d(TAG, "=== Raw intent parcel (${raw.size} bytes) ===")
+            raw.toList().chunked(16).forEachIndexed { i, chunk ->
+                Log.d(TAG, "%04x  %-48s  |%s|".format(
+                    i * 16,
+                    chunk.joinToString(" ") { "%02x".format(it) },
+                    chunk.joinToString("") { b -> if (b.toInt() in 32..126) b.toInt().toChar().toString() else "." },
+                ))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Raw parcel dump failed: $e")
+        } finally {
+            parcel.recycle()
         }
 
-        Log.d(TAG, "FromRadio packet received (${bytes.size} bytes)")
-        onPacketReceived(bytes)
+        Log.d(TAG, "Bundle keys: ${intent.extras?.keySet()}")
     }
 
     companion object {

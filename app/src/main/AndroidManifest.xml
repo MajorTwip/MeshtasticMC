@@ -11,6 +11,11 @@
     <!-- Post notifications (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Required to receive protected broadcasts from the Meshtastic app (API 2.x+).
+         Meshtastic calls sendBroadcast(intent, "com.geeksville.mesh.MESH_PRIVILEGE") so any
+         receiver that does not hold this permission is silently skipped. -->
+    <uses-permission android:name="com.geeksville.mesh.MESH_PRIVILEGE" />
+
     <!-- Required on Android 11+ (API 30) to detect whether the Meshtastic app is installed. -->
     <queries>
         <package android:name="com.geeksville.mesh" />
