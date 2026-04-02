@@ -10,9 +10,9 @@ import org.meshtastic.core.model.DataPacket
 /**
  * Receives POSITION_APP broadcasts from the Meshtastic app and decodes the Position protobuf.
  *
- * The [Constants.EXTRA_PAYLOAD] extra is a [DataPacket] Parcelable. Android resolves
- * Parcelables by class name, so our stub [org.meshtastic.core.model.DataPacket] is
- * used instead of the real one — no Meshtastic SDK needed.
+ * The [Constants.EXTRA_PAYLOAD] extra is a [DataPacket] Parcelable sent by the
+ * Meshtastic app. Uses the real [org.meshtastic.core.model.DataPacket] from the
+ * official library (v2.7.13), decoded via Wire protobuf.
  */
 class MeshPacketReceiver(
     private val onPacketReceived: (bytes: ByteArray) -> Unit,
@@ -21,13 +21,7 @@ class MeshPacketReceiver(
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Constants.ACTION_RECEIVED_POSITION_APP) return
 
-        val packet = if (Build.VERSION.SDK_INT >= 33) {
-            intent.getParcelableExtra("com.geeksville.mesh.Payload", DataPacket::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra<DataPacket>("com.geeksville.mesh.Payload")
-        } ?: return
-
+        val packet = intent.getParcelableExtra("com.geeksville.mesh.Payload", DataPacket::class.java) ?: return
         val protoBytes = packet.bytes ?: return
 
         decodePosition(protoBytes, packet.from)
