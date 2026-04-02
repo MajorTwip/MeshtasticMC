@@ -108,7 +108,10 @@ class MeshtasticForwardService : Service() {
     // ── BroadcastReceiver registration ────────────────────────────────────────
 
     private fun registerMeshtasticReceiver() {
-        val filter = IntentFilter(Constants.ACTION_RECEIVED_POSITION_APP)
+        val filter = IntentFilter().apply {
+            addAction(Constants.ACTION_RECEIVED_POSITION_APP)
+            addAction(Constants.ACTION_RECEIVED_TEXT_MESSAGE_APP)
+        }
 
         // Android 14 (API 34) requires an explicit RECEIVER_EXPORTED / RECEIVER_NOT_EXPORTED
         // flag for dynamically registered receivers.  We need EXPORTED because the broadcasts
@@ -119,7 +122,7 @@ class MeshtasticForwardService : Service() {
             @Suppress("UnspecifiedRegisterReceiverFlag")
             registerReceiver(meshReceiver, filter)
         }
-        Log.i(TAG, "Subscribed to ${Constants.ACTION_RECEIVED_POSITION_APP}")
+        Log.i(TAG, "Subscribed to position + text message broadcasts")
     }
 
     // ── Wi-Fi multicast lock ──────────────────────────────────────────────────

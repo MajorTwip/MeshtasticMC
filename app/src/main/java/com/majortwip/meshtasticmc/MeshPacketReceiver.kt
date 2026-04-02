@@ -8,7 +8,7 @@ import android.util.Log
 import org.meshtastic.core.model.DataPacket
 
 /**
- * Receives POSITION_APP broadcasts from the Meshtastic app and decodes the Position protobuf.
+ * Receives POSITION_APP and TEXT_MESSAGE_APP broadcasts from the Meshtastic app.
  *
  * The [Constants.EXTRA_PAYLOAD] extra is a [DataPacket] Parcelable sent by the
  * Meshtastic app. Uses the real [org.meshtastic.core.model.DataPacket] from the
@@ -19,13 +19,23 @@ class MeshPacketReceiver(
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != Constants.ACTION_RECEIVED_POSITION_APP) return
+        val packet = intent.getParcelableExtra(Constants.EXTRA_PAYLOAD, DataPacket::class.java) ?: return
+        val bytes = packet.bytes ?: return
 
-        val packet = intent.getParcelableExtra("com.geeksville.mesh.Payload", DataPacket::class.java) ?: return
-        val protoBytes = packet.bytes ?: return
+        when (intent.action) {
+            Constants.ACTION_RECEIVED_POSITION_APP  -> decodePosition(bytes, packet.from)
+            Constants.ACTION_RECEIVED_TEXT_MESSAGE_APP -> decodeTextMessage(bytes, packet.from)
+            else -> return
+        }
 
-        decodePosition(protoBytes, packet.from)
-        onPacketReceived(protoBytes)
+        onPacketReceived(bytes)
+    }
+
+    // ── Text message decoder ─────────────────────────────────────────────────
+
+    private fun decodeTextMessage(bytes: ByteArray, from: String?) {
+        val text = bytes.toString(Charsets.UTF_8)
+        Log.i(TAG, "TextMessage from=$from  \"$text\"")
     }
 
     // ── Protobuf decoder (Position message) ─────────────────────────────────
