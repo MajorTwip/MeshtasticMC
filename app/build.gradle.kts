@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.protobuf)
 }
 
 android {
@@ -45,8 +46,18 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.protobuf.javalite)
+}
 
-    // Meshtastic Android API — provides DataPacket, MeshtasticIntent constants, etc.
-    implementation("com.github.meshtastic.Meshtastic-Android:meshtastic-android-api:v2.7.13")
-    implementation("com.github.meshtastic.Meshtastic-Android:meshtastic-android-model:v2.7.13")
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:4.30.2"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("java") { option("lite") }
+            }
+        }
+    }
 }

@@ -10,6 +10,12 @@ object Constants {
     /** Package name of the Meshtastic Android app. */
     const val MESHTASTIC_PACKAGE = "com.geeksville.mesh"
 
+    /** Broadcast action sent by Meshtastic when a position packet is received. */
+    const val ACTION_RECEIVED_POSITION_APP = "com.geeksville.mesh.RECEIVED.POSITION_APP"
+
+    /** Intent extra key carrying the raw packet payload (a Parcelable DataPacket). */
+    const val EXTRA_PAYLOAD = "com.geeksville.mesh.Payload"
+
     // ── UDP Multicast ────────────────────────────────────────────────────────
 
     /** Default multicast group address. */
