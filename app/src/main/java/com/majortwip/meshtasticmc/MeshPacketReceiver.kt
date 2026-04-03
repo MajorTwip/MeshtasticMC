@@ -3,42 +3,49 @@ package com.majortwip.meshtasticmc
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Parcel
+import android.os.Build
 import android.util.Log
-import org.meshtastic.core.api.MeshtasticIntent
+import org.meshtastic.core.model.DataPacket
 
 /**
- * [BroadcastReceiver] that listens for [MeshtasticIntent.ACTION_RECEIVED_POSITION_APP] broadcasts
- * and logs the raw payload bytes for diagnostic purposes.
+ * Receives POSITION_APP and TEXT_MESSAGE_APP broadcasts from the Meshtastic app.
+ *
+ * The [Constants.EXTRA_PAYLOAD] extra is a [DataPacket] Parcelable sent by the
+ * Meshtastic app. Uses the real [org.meshtastic.core.model.DataPacket] from the
+ * official library (v2.7.13), decoded via Wire protobuf.
  */
 class MeshPacketReceiver(
     private val onPacketReceived: (bytes: ByteArray) -> Unit,
 ) : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "onReceive: action=${intent.action}")
-        if (intent.action != MeshtasticIntent.ACTION_RECEIVED_POSITION_APP) return
+        val packet = intent.getParcelableExtra(Constants.EXTRA_PAYLOAD, DataPacket::class.java) ?: return
+        val bytes = packet.bytes ?: return
 
-        // Dump raw intent parcel BEFORE any extras access (avoids deserialization NPE).
-        val parcel = Parcel.obtain()
-        try {
-            intent.writeToParcel(parcel, 0)
-            val raw = parcel.marshall()
-            Log.d(TAG, "=== Raw intent parcel (${raw.size} bytes) ===")
-            raw.toList().chunked(16).forEachIndexed { i, chunk ->
-                Log.d(TAG, "%04x  %-48s  |%s|".format(
-                    i * 16,
-                    chunk.joinToString(" ") { "%02x".format(it) },
-                    chunk.joinToString("") { b -> if (b.toInt() in 32..126) b.toInt().toChar().toString() else "." },
-                ))
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Raw parcel dump failed: $e")
-        } finally {
-            parcel.recycle()
+        when (intent.action) {
+            Constants.ACTION_RECEIVED_POSITION_APP  -> decodePosition(bytes, packet.from)
+            Constants.ACTION_RECEIVED_TEXT_MESSAGE_APP -> decodeTextMessage(bytes, packet.from)
+            else -> return
         }
 
-        Log.d(TAG, "Bundle keys: ${intent.extras?.keySet()}")
+        onPacketReceived(bytes)
+    }
+
+    // ── Text message decoder ─────────────────────────────────────────────────
+
+    private fun decodeTextMessage(bytes: ByteArray, from: String?) {
+        val text = bytes.toString(Charsets.UTF_8)
+        Log.i(TAG, "TextMessage from=$from  \"$text\"")
+    }
+
+    // ── Protobuf decoder (Position message) ─────────────────────────────────
+
+    private fun decodePosition(bytes: ByteArray, from: String?) {
+        val pos = org.meshtastic.proto.Position.parseFrom(bytes)
+        val lat = if (pos.hasLatitudeI())  "%.7f".format(pos.latitudeI  / 1e7) else "?"
+        val lon = if (pos.hasLongitudeI()) "%.7f".format(pos.longitudeI / 1e7) else "?"
+        val alt = if (pos.hasAltitude())   "${pos.altitude}m"                   else "?"
+        Log.i(TAG, "Position from=$from  lat=$lat  lon=$lon  alt=$alt  time=${pos.time}  sats=${pos.satsInView}")
     }
 
     companion object {

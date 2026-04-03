@@ -1,6 +1,7 @@
 [versions]
 agp = "8.7.3"
 kotlin = "2.3.0"
+protobuf-plugin = "0.9.4"
 coreKtx = "1.15.0"
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -15,7 +16,9 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+protobuf-javalite = { group = "com.google.protobuf", name = "protobuf-javalite", version = "4.30.2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
